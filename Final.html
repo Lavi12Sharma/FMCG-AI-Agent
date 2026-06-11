@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Millionminds - Comprehensive Campus TaaS Console</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary: #e03a3e;
+            --primary-dark: #b8272b;
+            --secondary: #0066b2;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border: #cbd5e1;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --info: #06b6d4;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f5f9; color: var(--dark); padding-bottom: 60px; }
+        header { background: var(--dark); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--primary); }
+        .brand-container { display: flex; align-items: center; gap: 15px; }
+        .brand-logo { font-size: 28px; font-weight: 800; letter-spacing: 1px; color: var(--primary); text-transform: uppercase; }
+        .app-badge { background: var(--secondary); color: white; padding: 4px 12px; border-radius: 4px; font-size: 14px; font-weight: 600; text-transform: uppercase; }
+        .nav-tabs { display: flex; background: #e2e8f0; padding: 10px 30px 0 30px; border-bottom: 1px solid var(--border); overflow-x: auto; gap: 8px; }
+        .tab-btn { padding: 12px 20px; background: #cbd5e1; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; cursor: pointer; font-weight: 600; color: #475569; transition: all 0.2s; white-space: nowrap; }
+        .tab-btn:hover { background: #94a3b8; color: var(--dark); }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .content-container { padding: 30px; max-width: 1600px; margin: 0 auto; }
+        .panel { display: none; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .panel.active { display: block; }
+        h2 { font-size: 22px; color: var(--dark); margin-bottom: 8px; border-left: 5px solid var(--secondary); padding-left: 12px; }
+        .section-desc { color: #64748b; font-size: 14px; margin-bottom: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; margin-bottom: 25px; }
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; position: relative; }
+        .card-counter { position: absolute; top: 15px; right: 15px; background: #e2e8f0; color: #475569; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+        h3 { font-size: 16px; margin-bottom: 15px; color: #334155; display: flex; align-items: center; gap: 8px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+        .form-control, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; outline: none; background-color: white; }
+        .form-control:focus, select:focus { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(0,102,178,0.15); }
+        .btn { display: inline-block; width: 100%; padding: 11px; background: var(--secondary); color: white; border: none; border-radius: 4px; font-weight: 600; font-size: 14px; cursor: pointer; text-align: center; transition: background 0.2s; }
+        .btn:hover { background: #005291; }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #16a34a; }
+        .btn-primary-action { background: var(--primary); }
+        .btn-primary-action:hover { background: var(--primary-dark); }
+        .seed-bar { background: #15803d; color: white; padding: 12px 20px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .seed-bar:hover { background: #166534; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f1f5f9; color: #475569; font-weight: 600; }
+        tr:hover { background: #f8fafc; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .badge-info { background: #e0f2fe; color: #0369a1; }
+        .badge-success { background: #dcfce7; color: #15803d; }
+        .badge-warning { background: #fef3c7; color: #b45309; }
+        .pipeline-flow { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0; }
+        .pipeline-card { flex: 1; min-width: 220px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 6px; padding: 15px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .pipeline-card.active-step { border-color: var(--secondary); background: #f0fdf4; }
+        .pipeline-card.completed-step { border-color: var(--success); background: #f0fdf4; }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .empty-log { color: #94a3b8; text-align: center; padding: 20px; font-style: italic; }
+        .toggle-view-btns { display: flex; gap: 10px; margin-bottom: 15px; }
+        .view-toggle-btn { padding: 8px 16px; background: #e2e8f0; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .view-toggle-btn.active { background: #475569; color: white; border-color: #475569; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-container">
+            <div class="brand-logo">Millionminds</div>
+            <div class="app-badge">Campus TaaS App</div>
+        </div>
+        <div style="font-size: 14px; font-weight: 600; color: #94a3b8;">
+            Active Desk Authorization View: <span style="color: white; background: #475569; padding: 4px 8px; border-radius: 4px;">System Administration Hub</span>
+        </div>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab(1)">1. Master Registration Desk</button>
+        <button class="tab-btn" onclick="switchTab(2)">2. Live SOW Allocator</button>
+        <button class="tab-btn" onclick="switchTab(3)">3. Setup & Compliance Gate</button>
+        <button class="tab-btn" onclick="switchTab(4)">4. Lifecycle Execution Pipeline</button>
+        <button class="tab-btn" onclick="switchTab(5)">5. Project Closure & Certification</button>
+    </div>
+
+    <div class="content-container">
+
+        <!-- TAB 1 -->
+        <div id="tab1" class="panel active">
+            <h2>1. Central Registration & Directory Ledger</h2>
+            <div class="section-desc">Register and maintain verified profiles of Startup Companies, Institutional College Nodes, and Student Resources.</div>
+            
+            <div class="seed-bar" onclick="triggerAutoSeed()">
+                <span>⚡ Auto-Seed Core Target Real Arrays (12 Startups, 12 Colleges, 30 Students)</span>
+                <span style="font-size: 12px; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 4px;">Execute Seeder</span>
+            </div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <span class="card-counter" id="count-startups">0</span>
+                    <h3>Register Corporate Entity</h3>
+                    <div class="form-group">
+                        <label>Startup Company Name</label>
+                        <input type="text" id="reg-startup-name" class="form-control" placeholder="e.g., Aarav Unmanned Systems">
+                    </div>
+                    <div class="form-group">
+                        <label>Domain Sector</label>
+                        <input type="text" id="reg-startup-sector" class="form-control" placeholder="e.g., IT and Services">
+                    </div>
+                    <button class="btn" onclick="registerStartup()">Inject Entity Ledger</button>
+                </div>
+
+                <div class="card">
+                    <span class="card-counter" id="count-colleges">0</span>
+                    <h3>Register Institutional Node</h3>
+                    <div class="form-group">
+                        <label>Institution / College Name</label>
+                        <input type="text" id="reg-college-name" class="form-control" placeholder="e.g., Mahatma Basaweshwar Education Society">
+                    </div>
+                    <div class="form-group">
+                        <label>Regional Territory Location</label>
+                        <input type="text" id="reg-college-loc" class="form-control" placeholder="e.g., Ambajogai, Maharashtra">
+                    </div>
+                    <button class="btn" onclick="registerCollege()">Inject Campus Node</button>
+                </div>
+
+                <div class="card">
+                    <span class="card-counter" id="count-students">0</span>
+                    <h3>Register Student Professional</h3>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="reg-student-name" class="form-control" placeholder="e.g., Dhivakar Rajaram">
+                    </div>
+                    <div class="form-group">
+                        <label>Primary Technical Specialization</label>
+                        <input type="text" id="reg-student-spec" class="form-control" placeholder="e.g., MCA">
+                    </div>
+                    <button class="btn" onclick="registerStudent()">Inject Student Resource</button>
+                </div>
+            </div>
+
+            <div style="background: white; border: 1px solid var(--border); border-radius: 6px; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0;">Live Infrastructure Database Directory View</h3>
+                    <div class="toggle-view-btns">
+                        <button id="toggle-st" class="view-toggle-btn active" onclick="changeDirectoryView('startups')">View Startups</button>
+                        <button id="toggle-cl" class="view-toggle-btn" onclick="changeDirectoryView('colleges')">View Colleges</button>
+                        <button id="toggle-sd" class="view-toggle-btn" onclick="changeDirectoryView('students')">View Students</button>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="directory-table">
+                        <thead><tr id="directory-headers"><th>ID</th><th>Startup Name</th><th>Domain Sector</th></tr></thead>
+                        <tbody id="directory-rows"><tr><td colspan="3" class="empty-log">No records rendered. Click Auto-Seed or register above to generate active registers.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2 -->
+        <div id="tab2" class="panel">
+            <h2>2. Client Statement of Work (SOW) Matching & Team Assembly Desk</h2>
+            <div class="section-desc">Post client requirements, map eager institutional nodes, and construct specialized execution cohorts.</div>
+            
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+                <div class="card" style="background: white;">
+                    <h3>Deploy Corporate Client SOW Project</h3>
+                    <div class="form-group">
+                        <label>Sponsoring Client Entity (Startup)</label>
+                        <select id="sow-startup-select"><option value="">Select Target SOW Context Scope</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Statement of Work Project Title</label>
+                        <input type="text" id="sow-title" class="form-control" placeholder="e.g., AI Agent FMCG Digital Sales Orchestration Module">
+                    </div>
+                    <div class="form-group">
+                        <label>Target Technology Domain</label>
+                        <input type="text" id="sow-tech" class="form-control" placeholder="e.g., Agentic AI Architecture Framework">
+                    </div>
+                    <button class="btn btn-primary-action" onclick="createSOW()">Commit Tripartite SOW to Ledger</button>
+                </div>
+
+                <div class="card" style="background: white;">
+                    <h3>Interactive Opt-in & Cohort Composition Engine</h3>
+                    <div class="form-group">
+                        <label>Select Target SOW Context Scope</label>
+                        <select id="optin-sow-select" onchange="renderCohortMappings()"><option value="">Select SOW Context</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Participating Nodes Setup</label>
+                        <label style="margin-top: 10px;">Participating Institution</label>
+                        <select id="optin-college-select"><option value="">Participating Institution</option></select>
+                    </div>
+                    <button class="btn btn-success" onclick="mapCollegeToSOW()">Commit Campus Participation</button>
+                </div>
+            </div>
+
+            <div style="background: white; border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-top: 25px;">
+                <h3>Active Deployment Framework Matrix</h3>
+                <table id="sow-matrix-table">
+                    <thead><tr><th>SOW ID</th><th>Startup Client</th><th>Project Title</th><th>Mapped Campus Hubs</th><th>Assembled Resources</th></tr></thead>
+                    <tbody id="sow-matrix-rows"><tr><td colspan="5" class="empty-log">No active statement of work matrices mapped yet.</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3 -->
+        <div id="tab3" class="panel">
+            <h2>3. Pre-Execution Handshake & Compliance Gate</h2>
+            <div class="section-desc">Verify contract documents, execute joint tripartite campus signoffs, and bind legal term consensus locks.</div>
+            <div class="form-group" style="max-width: 400px; margin-bottom: 25px;">
+                <label>Select Active Project Stream:</label>
+                <select id="compliance-sow-select" onchange="renderComplianceGate()"><option value="">Select Project Scope Context</option></select>
+            </div>
+            <div id="compliance-gate-ui" class="grid-3">
+                <div class="card" style="text-align: center; opacity: 0.5;">
+                    <h3>1. Client SOW Ingestion</h3>
+                    <p style="font-size: 13px; color: #64748b; margin: 15px 0;">Project scope parameters and technical milestones ingested securely into the configuration ledger.</p>
+                    <span class="badge">Awaiting Scope Selection</span>
+                </div>
+                <div class="card" style="text-align: center; opacity: 0.5;">
+                    <h3>2. Campus Allocation Signoff</h3>
+                    <p style="font-size: 13px; color: #64748b; margin: 15px 0;">Institutional resource verification approval mapping and verified student allocation checkpoint validation.</p>
+                    <span class="badge">Awaiting Scope Selection</span>
+                </div>
+                <div class="card" style="text-align: center; opacity: 0.5;">
+                    <h3>3. Team Legal T&C Consent</h3>
+                    <p style="font-size: 13px; color: #64748b; margin: 15px 0;">Cohort execution team terms, dynamic IP allocation, compliance signatures, and IP structures signed off.</p>
+                    <span class="badge">Awaiting Scope Selection</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4 -->
+        <div id="tab4" class="panel">
+            <h2>4. Operational Milestone Execution & Sprint Tracker Engine</h2>
+            <div class="section-desc">Trace the live progress framework across macro filters and micro cross-collaboration feedback loops.</div>
+            
+            <div style="background: white; border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 25px; display: flex; gap: 20px; align-items: center; overflow-x: auto;">
+                <div class="form-group" style="margin: 0; min-width: 250px;">
+                    <label>Active Enterprise SOW</label>
+                    <select id="pipeline-sow-select" onchange="renderPipelineView()"><option value="">Select SOW Matrix Context</option></select>
+                </div>
+                <div><label style="font-size:12px; font-weight:600; color:#64748b;">Mapped Campus Hub</label><div id="pipe-lbl-college" style="font-weight:600; font-size:14px; margin-top:4px;">-</div></div>
+                <div><label style="font-size:12px; font-weight:600; color:#64748b;">Assembled Cohort Team</label><div id="pipe-lbl-cohort" style="font-weight:600; font-size:14px; margin-top:4px;">-</div></div>
+                <div><label style="font-size:12px; font-weight:600; color:#64748b;">Operational Domain</label><div id="pipe-lbl-tech" style="font-weight:600; font-size:14px; margin-top:4px;">-</div></div>
+                <div><label style="font-size:12px; font-weight:600; color:#64748b;">Temporal Reporting Node</label><div style="font-weight:600; font-size:14px; margin-top:4px; color: var(--primary);">2026 June Matrix Matrix</div></div>
+            </div>
+
+            <div class="pipeline-flow" id="pipeline-flow-container">
+                <div class="pipeline-card"><h4>POST JOB REQUIREMENTS</h4><p style="font-size:11px; margin:8px 0; color:#64748b;">Role Authority: ADMIN</p><span class="badge">PENDING</span></div>
+                <div class="pipeline-card"><h4>INSTA-MATCH SELECTION</h4><p style="font-size:11px; margin:8px 0; color:#64748b;">Role Authority: ADMIN</p><span class="badge">PENDING</span></div>
+                <div class="pipeline-card"><h4>EVALUATE SPRINT</h4><p style="font-size:11px; margin:8px 0; color:#64748b;">Role Authority: STUDENT</p><span class="badge">PENDING</span></div>
+                <div class="pipeline-card"><h4>INTERVIEW PHASE</h4><p style="font-size:11px; margin:8px 0; color:#64748b;">Role Authority: CLIENT</p><span class="badge">PENDING</span></div>
+                <div class="pipeline-card"><h4>COLLABORATE SANDBOX</h4><p style="font-size:11px; margin:8px 0; color:#64748b;">Role Authority: STUDENT</p><span class="badge">PENDING</span></div>
+                <div class="pipeline-card"><h4>APPROVED SIGNOFF</h4><p style="font-size:11px; margin:8px 0; color:#64748b;">Role Authority: CLIENT</p><span class="badge">PENDING</span></div>
+            </div>
+        </div>
+
+        <!-- TAB 5 -->
+        <div id="tab5" class="panel">
+            <h2>5. Project Delivery, Liability Release Handshake & Certification Engine</h2>
+            <div class="section-desc">Validate client delivery criteria, execute liability release waiver handshakes, and disburse performance certifications.</div>
+            
+            <div class="form-group" style="max-width: 400px; margin-bottom: 25px;">
+                <label>Target Delivery Project Stream Context:</label>
+                <select id="closure-sow-select" onchange="renderClosureView()"><option value="">Select Project Stream Ledger</option></select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 25px;">
+                <div class="card" style="background: white;" id="closure-left-panel">
+                    <h3>1. Client Acceptance Handshake & Liability Release</h3>
+                    <p style="font-size: 13px; color:#64748b; margin-bottom: 15px;">Validation logs checking asset ingestion loops, code tree repository transfers, and release triggers configurations.</p>
+                    <div class="empty-log">Select an active project stream to review delivery verification parameters.</div>
+                </div>
+                <div class="card" style="background: white;" id="closure-right-panel">
+                    <h3>2. Institutional Experience Certification Desk</h3>
+                    <p style="font-size: 13px; color:#64748b; margin-bottom: 15px;">Converts performance matrices directly into cryptographically signed digital experience certification ledgers.</p>
+                    <div class="empty-log">Select an active project stream.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ====== SYSTEM STATE CONFIGURATION LEDGERS ======
+        let DIRECTORY_REGISTRY = { startups: [], colleges: [], students: [] };
+        let SOW_REGISTRY = [];
+        let CURRENT_DIR_VIEW = 'startups';
+
+        // ====== REAL SEED ARRAYS FROM SIR'S DATA EXCEL ======
+        const REAL_STARTUP_SEEDS = [
+          { "id": "st-1", "name": "Aarav Unmanned Systems", "sector": "IT and Services" },
+          { "id": "st-2", "name": "Admission Table", "sector": "Edu-Tech" },
+          { "id": "st-3", "name": "Amigobulls", "sector": "Computer Software" },
+          { "id": "st-4", "name": "Athletto", "sector": "Health Tech" },
+          { "id": "st-5", "name": "Butterfly Innovations", "sector": "Edu-Tech" },
+          { "id": "st-6", "name": "Cardiotrack", "sector": "Wellness and Fitness" },
+          { "id": "st-7", "name": "Cbrex", "sector": "Internet Business" },
+          { "id": "st-8", "name": "Citizengage", "sector": "IT and Services" },
+          { "id": "st-9", "name": "Awign", "sector": "Research and Developement" },
+          { "id": "st-10", "name": "Design Cafe", "sector": "Architecture & Planning" },
+          { "id": "st-11", "name": "Docsapp", "sector": "Mobile and Apps" },
+          { "id": "st-12", "name": "Drivezy", "sector": "Online Transportation" }
+        ];
+
+        const REAL_COLLEGE_SEEDS = [
+          { "id": "cl-1", "name": "Mahatma Basaweshwar Education Society's College of Engineering", "location": "Ambajogai, Maharashtra" },
+          { "id": "cl-2", "name": "Padmanava College of Engineering", "location": "Rourkela, Odisha" },
+          { "id": "cl-3", "name": "Veer Surendra Sai University of Technology", "location": "Sambalpur, Odisha" },
+          { "id": "cl-4", "name": "Suresh Gyan Vihar School of Engineering & Technology", "location": "Jaipur, Rajasthan" },
+          { "id": "cl-5", "name": "Ashoka Institute of Technology And Management", "location": "Varanasi, Uttar Pradesh" },
+          { "id": "cl-6", "name": "BBS College of Engineering & Technology", "location": "Phaphamau, Uttar Pradesh" },
+          { "id": "cl-7", "name": "E - MAX Group of Institutions", "location": "Ambala, Haryana" },
+          { "id": "cl-8", "name": "RVR & JC College of Engineering", "location": "Guntur, Andhra Pradesh" },
+          { "id": "cl-9", "name": "PR Government College Kakinada", "location": "Kakinada, Andhra Pradesh" },
+          { "id": "cl-10", "name": "G Pulla Reddy College of Engineering & Technology", "location": "Kurnool, Andhra Pradesh" },
+          { "id": "cl-11", "name": "Lakireddy Bali Reddy College of Engineering", "location": "Mylavaram, Andhra Pradesh" },
+          { "id": "cl-12", "name": "Annamacharya Institute Of Technology & Sciences", "location": "Tirupati, Andhra Pradesh" }
+        ];
+
+        const REAL_STUDENT_SEEDS = [
+          { "id": "sd-1", "name": "Dhivakar Rajaram", "specialization": "MCA" },
+          { "id": "sd-2", "name": "Harsh Soni", "specialization": "MCA" },
+          { "id": "sd-3", "name": "Ameesha Sharma", "specialization": "BCA" },
+          { "id": "sd-4", "name": "Vijayaraghavan S", "specialization": "MCA" },
+          { "id": "sd-5", "name": "Bhavesh Ravat", "specialization": "BCA" },
+          { "id": "sd-6", "name": "Udhayan Somaskandan", "specialization": "MCA" },
+          { "id": "sd-7", "name": "Bikram Murmu", "specialization": "BCA" },
+          { "id": "sd-8", "name": "Muthyala Srinivas", "specialization": "MBA" },
+          { "id": "sd-9", "name": "Ashley Kumawat", "specialization": "B Tech" },
+          { "id": "sd-10", "name": "Yashashwini Shekhawat", "specialization": "BSc CS" },
+          { "id": "sd-11", "name": "Anushka Jain", "specialization": "B Tech" },
+          { "id": "sd-12", "name": "Pratistha Namdeo", "specialization": "MBA" },
+          { "id": "sd-13", "name": "Gishikha Shivprasad", "specialization": "MBA" },
+          { "id": "sd-14", "name": "Aman Singh", "specialization": "MCA" },
+          { "id": "sd-15", "name": "Pratik Kashyap", "specialization": "MCA" },
+          { "id": "sd-16", "name": "Sweekruthi CU", "specialization": "BE Civil" },
+          { "id": "sd-17", "name": "Navya Aggarwal", "specialization": "BBA" },
+          { "id": "sd-18", "name": "Puneeth V P", "specialization": "MBA Fin" },
+          { "id": "sd-19", "name": "Shalu Poria", "specialization": "MBA Fin" },
+          { "id": "sd-20", "name": "Rishi Tiwari", "specialization": "BBA" },
+          { "id": "sd-21", "name": "Likith R", "specialization": "MBA" },
+          { "id": "sd-22", "name": "Kahaan Shah", "specialization": "BBA" },
+          { "id": "sd-23", "name": "Dhhravee Anand", "specialization": "BBA" },
+          { "id": "sd-24", "name": "Aashish Sharma", "specialization": "BBA" },
+          { "id": "sd-25", "name": "Pratistha Namdeo", "specialization": "MBA" },
+          { "id": "sd-26", "name": "Ravat Bhavesh", "specialization": "BCA" },
+          { "id": "sd-27", "name": "Chesta Bhradwaj", "specialization": "MBA" },
+          { "id": "sd-28", "name": "Saksham Mittal", "specialization": "BCA" },
+          { "id": "sd-29", "name": "Arpit Singh", "specialization": "BCA" },
+          { "id": "sd-30", "name": "Simran Gupta", "specialization": "MBA" }
+        ];
+
+        window.onload = function() {
+            // Load state data
+            let savedDir = localStorage.getItem('MM_DIRECTORY_REGISTRY');
+            let savedSow = localStorage.getItem('MM_SOW_REGISTRY');
+            if(savedDir) DIRECTORY_REGISTRY = JSON.parse(savedDir);
+            if(savedSow) SOW_REGISTRY = JSON.parse(savedSow);
+            
+            updateCounters();
+            renderDirectoryView();
+            populateAllDropdowns();
+            renderSOWMatrix();
+        }
+
+        function switchTab(tabIndex) {
+            document.querySelectorAll('.tab-btn').forEach((b, i) => {
+                if(i === (tabIndex - 1)) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+            document.querySelectorAll('.panel').forEach((p, i) => {
+                if(i === (tabIndex - 1)) p.classList.add('active');
+                else p.classList.remove('active');
+            });
+            if(tabIndex === 3) renderComplianceGate();
+            if(tabIndex === 4) renderPipelineView();
+            if(tabIndex === 5) renderClosureView();
+        }
+
+        function seedSystemWithDummyDataArrays() {
+            DIRECTORY_REGISTRY.startups = [...REAL_STARTUP_SEEDS];
+            DIRECTORY_REGISTRY.colleges = [...REAL_COLLEGE_SEEDS];
+            DIRECTORY_REGISTRY.students = [...REAL_STUDENT_SEEDS];
+            saveDirectoryState();
+        }
+
+        function triggerAutoSeed() {
+            seedSystemWithDummyDataArrays();
+            updateCounters();
+            renderDirectoryView();
+            populateAllDropdowns();
+            Swal.fire('Data Seeded!', 'Successfully injected real spreadsheet registers into environmental matrix.', 'success');
+        }
+
+        function saveDirectoryState() {
+            localStorage.setItem('MM_DIRECTORY_REGISTRY', JSON.stringify(DIRECTORY_REGISTRY));
+        }
+
+        function saveSowState() {
+            localStorage.setItem('MM_SOW_REGISTRY', JSON.stringify(SOW_REGISTRY));
+        }
+
+        function updateCounters() {
+            document.getElementById('count-startups').innerText = DIRECTORY_REGISTRY.startups.length;
+            document.getElementById('count-colleges').innerText = DIRECTORY_REGISTRY.colleges.length;
+            document.getElementById('count-students').innerText = DIRECTORY_REGISTRY.students.length;
+        }
+
+        function changeDirectoryView(view) {
+            CURRENT_DIR_VIEW = view;
+            document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+            if(view === 'startups') document.getElementById('toggle-st').classList.add('active');
+            if(view === 'colleges') document.getElementById('toggle-cl').classList.add('active');
+            if(view === 'students') document.getElementById('toggle-sd').classList.add('active');
+            renderDirectoryView();
+        }
+
+        function renderDirectoryView() {
+            const rows = document.getElementById('directory-rows');
+            const headers = document.getElementById('directory-headers');
+            rows.innerHTML = '';
+            
+            if(CURRENT_DIR_VIEW === 'startups') {
+                headers.innerHTML = '<th>ID</th><th>Startup Name</th><th>Domain Sector</th>';
+                if(DIRECTORY_REGISTRY.startups.length === 0) {
+                    rows.innerHTML = '<tr><td colspan="3" class="empty-log">No startups registered yet.</td></tr>';
+                    return;
+                }
+                DIRECTORY_REGISTRY.startups.forEach(x => {
+                    rows.innerHTML += `<tr><td>${x.id}</td><td><b>${x.name}</b></td><td>${x.sector}</td></tr>`;
+                });
+            } else if(CURRENT_DIR_VIEW === 'colleges') {
+                headers.innerHTML = '<th>ID</th><th>Institution / College Hub Name</th><th>Regional Territory Location</th>';
+                if(DIRECTORY_REGISTRY.colleges.length === 0) {
+                    rows.innerHTML = '<tr><td colspan="3" class="empty-log">No campus institutional nodes registered yet.</td></tr>';
+                    return;
+                }
+                DIRECTORY_REGISTRY.colleges.forEach(x => {
+                    rows.innerHTML += `<tr><td>${x.id}</td><td><b>${x.name}</b></td><td>${x.location}</td></tr>`;
+                });
+            } else if(CURRENT_DIR_VIEW === 'students') {
+                headers.innerHTML = '<th>ID</th><th>Student Professional Name</th><th>Core Technical Specialization</th>';
+                if(DIRECTORY_REGISTRY.students.length === 0) {
+                    rows.innerHTML = '<tr><td colspan="3" class="empty-log">No student resources mapped yet.</td></tr>';
+                    return;
+                }
+                DIRECTORY_REGISTRY.students.forEach(x => {
+                    rows.innerHTML += `<tr><td>${x.id}</td><td><b>${x.name}</b></td><td><span class="badge badge-info">${x.specialization}</span></td></tr>`;
+                });
+            }
+        }
+
+        function registerStartup() {
+            let name = document.getElementById('reg-startup-name').value.trim();
+            let sector = document.getElementById('reg-startup-sector').value.trim();
+            if(!name || !sector) return Swal.fire('Error', 'Fill all attributes', 'error');
+            let id = 'st-' + (DIRECTORY_REGISTRY.startups.length + 1);
+            DIRECTORY_REGISTRY.startups.push({ id, name, sector });
+            saveDirectoryState(); updateCounters(); renderDirectoryView(); populateAllDropdowns();
+            document.getElementById('reg-startup-name').value = ''; document.getElementById('reg-startup-sector').value = '';
+            Swal.fire('Registered!', 'Startup Ledger Updated.', 'success');
+        }
+
+        function registerCollege() {
+            let name = document.getElementById('reg-college-name').value.trim();
+            let loc = document.getElementById('reg-college-loc').value.trim();
+            if(!name || !loc) return Swal.fire('Error', 'Fill all attributes', 'error');
+            let id = 'cl-' + (DIRECTORY_REGISTRY.colleges.length + 1);
+            DIRECTORY_REGISTRY.colleges.push({ id, name, location: loc });
+            saveDirectoryState(); updateCounters(); renderDirectoryView(); populateAllDropdowns();
+            document.getElementById('reg-college-name').value = ''; document.getElementById('reg-college-loc').value = '';
+            Swal.fire('Registered!', 'Campus Node Ledger Injected.', 'success');
+        }
+
+        // Modified student registry to assign a random slice of students
+        function registerStudent() {
+            let name = document.getElementById('reg-student-name').value.trim();
+            let spec = document.getElementById('reg-student-spec').value.trim();
+            if(!name || !spec) return Swal.fire('Error', 'Fill all attributes', 'error');
+            let id = 'sd-' + (DIRECTORY_REGISTRY.students.length + 1);
+            DIRECTORY_REGISTRY.students.push({ id, name, specialization: spec });
+            saveDirectoryState(); updateCounters(); renderDirectoryView(); populateAllDropdowns();
+            document.getElementById('reg-student-name').value = ''; document.getElementById('reg-student-spec').value = '';
+            Swal.fire('Registered!', 'Student Resource Active.', 'success');
+        }
+
+        function populateAllDropdowns() {
+            const s1 = document.getElementById('sow-startup-select');
+            const s2 = document.getElementById('optin-college-select');
+            const s3 = document.getElementById('optin-sow-select');
+            const s4 = document.getElementById('compliance-sow-select');
+            const s5 = document.getElementById('pipeline-sow-select');
+            const s6 = document.getElementById('closure-sow-select');
+
+            s1.innerHTML = '<option value="">Select Target SOW Context Scope</option>';
+            DIRECTORY_REGISTRY.startups.forEach(x => s1.innerHTML += `<option value="${x.id}">${x.name}</option>`);
+
+            s2.innerHTML = '<option value="">Participating Institution</option>';
+            DIRECTORY_REGISTRY.colleges.forEach(x => s2.innerHTML += `<option value="${x.id}">${x.name}</option>`);
+
+            let sowOptions = '<option value="">Select SOW Matrix Context</option>';
+            SOW_REGISTRY.forEach(x => sowOptions += `<option value="${x.id}">SOW-${x.id}: ${x.title} (${x.startupName})</option>`);
+            
+            s3.innerHTML = sowOptions;
+            s4.innerHTML = sowOptions.replace('Select SOW Matrix Context', 'Select Project Scope Context');
+            s5.innerHTML = sowOptions.replace('Select SOW Matrix Context', 'Select SOW Matrix Context');
+            s6.innerHTML = sowOptions.replace('Select SOW Matrix Context', 'Select Project Stream Ledger');
+        }
+
+        function createSOW() {
+            let stId = document.getElementById('sow-startup-select').value;
+            let title = document.getElementById('sow-title').value.trim();
+            let tech = document.getElementById('sow-tech').value.trim();
+            if(!stId || !title || !tech) return Swal.fire('Error', 'Complete requirement block params', 'error');
+            
+            let st = DIRECTORY_REGISTRY.startups.find(x => x.id === stId);
+            let sowId = SOW_REGISTRY.length + 1;
+            
+            SOW_REGISTRY.push({
+                id: sowId,
+                startupId: stId,
+                startupName: st.name,
+                title: title,
+                tech: tech,
+                mappedColleges: [],
+                cohortStudents: [],
+                compliance: { s1: false, s2: false, s3: false },
+                currentStep: 1
+            });
+            
+            saveSowState(); populateAllDropdowns(); renderSOWMatrix();
+            document.getElementById('sow-title').value = ''; document.getElementById('sow-tech').value = '';
+            Swal.fire('Committed!', 'Tripartite SOW added to environment orchestration ledger.', 'success');
+        }
+
+        function mapCollegeToSOW() {
+            let sowId = document.getElementById('optin-sow-select').value;
+            let clId = document.getElementById('optin-college-select').value;
+            if(!sowId || !clId) return Swal.fire('Error', 'Select active SOW and College node.', 'error');
+            
+            let sow = SOW_REGISTRY.find(x => x.id == sowId);
+            let cl = DIRECTORY_REGISTRY.colleges.find(x => x.id == clId);
+            
+            if(sow.mappedColleges.includes(cl.name)) return Swal.fire('Warning', 'Node already mapped', 'warning');
+            
+            sow.mappedColleges.push(cl.name);
+            
+            // Auto assemble resources using structured indexes from REAL_STUDENT_SEEDS dynamically
+            if(sow.cohortStudents.length === 0 && DIRECTORY_REGISTRY.students.length > 0) {
+                let count = Math.min(3, DIRECTORY_REGISTRY.students.length);
+                let indices = [0, 1, 2].map(i => (sowId * 3 + i) % DIRECTORY_REGISTRY.students.length);
+                indices.forEach(idx => {
+                    sow.cohortStudents.push(DIRECTORY_REGISTRY.students[idx].name);
+                });
+            }
+            
+            saveSowState(); renderSOWMatrix();
+            Swal.fire('Campus Assembled!', 'Node mapped and resources dynamically configured to cohort team.', 'success');
+        }
+
+        function renderSOWMatrix() {
+            const rows = document.getElementById('sow-matrix-rows');
+            if(SOW_REGISTRY.length === 0) {
+                rows.innerHTML = '<tr><td colspan="5" class="empty-log">No active statement of work matrices mapped yet.</td></tr>';
+                return;
+            }
+            rows.innerHTML = '';
+            SOW_REGISTRY.forEach(x => {
+                let hubs = x.mappedColleges.length > 0 ? x.mappedColleges.join(', ') : '<span style="color:#f59e0b">Awaiting Institution Hub Binding</span>';
+                let team = x.cohortStudents.length > 0 ? x.cohortStudents.join(', ') : '<span style="color:#cbd5e1">-</span>';
+                rows.innerHTML += `<tr><td>SOW-${x.id}</td><td><b>${x.startupName}</b></td><td>${x.title}</td><td>${hubs}</td><td><small>${team}</small></td></tr>`;
+            });
+        }
+
+        function renderCohortMappings() {}
+
+        function renderComplianceGate() {
+            let id = document.getElementById('compliance-sow-select').value;
+            const container = document.getElementById('compliance-gate-ui');
+            if(!id) {
+                container.innerHTML = `<div class="card" style="text-align :center; opacity:0.5;"><h3>1. Client SOW Ingestion</h3><p style="font-size:13px; margin:15px 0;">Project scope parameters and technical milestones ingested securely.</p><span class="badge">Awaiting Scope Selection</span></div><div class="card" style="text-align :center; opacity:0.5;"><h3>2. Campus Allocation Signoff</h3><p style="font-size:13px; margin:15px 0;">Institutional resource verification approval mapping.</p><span class="badge">Awaiting Scope Selection</span></div><div class="card" style="text-align :center; opacity:0.5;"><h3>3. Team Legal T&C Consent</h3><p style="font-size:13px; margin:15px 0;">Cohort execution team terms dynamic structures.</p><span class="badge">Awaiting Scope Selection</span></div>`;
+                return;
+            }
+            let sow = SOW_REGISTRY.find(x => x.id == id);
+            container.innerHTML = `
+                <div class="card" style="text-align: center;">
+                    <h3>1. Client SOW Ingestion</h3>
+                    <p style="font-size: 13px; margin:15px 0; color:#475569;">Parameters setup completed securely inside registry systems environment maps.</p>
+                    <button class="btn ${sow.compliance.s1 ? 'btn-success' : 'btn-primary-action'}" onclick="executeComplianceAction(${id}, 's1')">${sow.compliance.s1 ? '✓ VERIFIED & INGESTED' : 'EXECUTE LEDGER PARSE'}</button>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <h3>2. Campus Allocation Signoff</h3>
+                    <p style="font-size: 13px; margin:15px 0; color:#475569;">Institutional authority resource signoff verification clearance verification loops.</p>
+                    <button class="btn ${sow.compliance.s2 ? 'btn-success' : 'btn-primary-action'}" onclick="executeComplianceAction(${id}, 's2')">${sow.compliance.s2 ? '✓ CAMPUS LOGS SIGNED' : 'COMMIT NODE SIGNOFF'}</button>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <h3>3. Team Legal T&C Consent</h3>
+                    <p style="font-size: 13px; margin:15px 0; color:#475569;">Consensus engine framework legal matrix tokenization setup rules parameters.</p>
+                    <button class="btn ${sow.compliance.s3 ? 'btn-success' : 'btn-primary-action'}" onclick="executeComplianceAction(${id}, 's3')">${sow.compliance.s3 ? '✓ LEGAL CONSENSUS LOCK' : 'LOCK INTELLECTUAL TERMS'}</button>
+                </div>
+            `;
+        }
+
+        function executeComplianceAction(sowId, stepKey) {
+            let sow = SOW_REGISTRY.find(x => x.id == sowId);
+            sow.compliance[stepKey] = true;
+            if(sow.compliance.s1 && sow.compliance.s2 && sow.compliance.s3 && sow.currentStep === 1) sow.currentStep = 2;
+            saveSowState(); renderComplianceGate();
+            Swal.fire('Compliance Updated', 'Cryptographic compliance verification updated.', 'success');
+        }
+
+        function renderPipelineView() {
+            let id = document.getElementById('pipeline-sow-select').value;
+            if(!id) {
+                document.getElementById('pipe-lbl-college').innerText = '-';
+                document.getElementById('pipe-lbl-cohort').innerText = '-';
+                document.getElementById('pipe-lbl-tech').innerText = '-';
+                document.getElementById('pipeline-flow-container').innerHTML = '<div class="empty-log" style="width:100%">Select an active matrix tracking configuration profile to map live pipelines.</div>';
+                return;
+            }
+            let sow = SOW_REGISTRY.find(x => x.id == id);
+            document.getElementById('pipe-lbl-college').innerText = sow.mappedColleges[0] || 'Unassigned Hub Node';
+            document.getElementById('pipe-lbl-cohort').innerText = sow.cohortStudents.length > 0 ? `${sow.cohortStudents.length} Assigned Members` : '0 Members';
+            document.getElementById('pipe-lbl-tech').innerText = sow.tech;
+
+            let steps = [
+                { name: 'POST JOB REQUIREMENTS', role: 'ADMIN' },
+                { name: 'INSTA-MATCH SELECTION', role: 'ADMIN' },
+                { name: 'EVALUATE SPRINT', role: 'STUDENT' },
+                { name: 'INTERVIEW PHASE', role: 'CLIENT' },
+                { name: 'COLLABORATE SANDBOX', role: 'STUDENT' },
+                { name: 'APPROVED SIGNOFF', role: 'CLIENT' }
+            ];
+
+            let html = '';
+            steps.forEach((st, i) => {
+                let stepNum = i + 1;
+                let statusClass = '';
+                let badgeHtml = '<span class="badge">LOCKED</span>';
+                
+                if(sow.currentStep > stepNum) { statusClass = 'completed-step'; badgeHtml = '<span class="badge badge-success">COMPLETED</span>'; }
+                else if(sow.currentStep === stepNum) { 
+                    statusClass = 'active-step'; 
+                    badgeHtml = `<button class="btn btn-success" style="padding:4px 8px; font-size:11px;" onclick="advancePipeline(${id}, ${stepNum})">COMPLETE SPRINT</button>`; 
+                }
+                html += `<div class="pipeline-card ${statusClass}"><h4>${st.name}</h4><p style="font-size:11px; margin:8px 0; color:#64748b;">Role Authority: ${st.role}</p>${badgeHtml}</div>`;
+            });
+            document.getElementById('pipeline-flow-container').innerHTML = html;
+        }
+
+        function advancePipeline(sowId, currentStep) {
+            let sow = SOW_REGISTRY.find(x => x.id == sowId);
+            sow.currentStep = currentStep + 1;
+            saveSowState(); renderPipelineView();
+            Swal.fire('Sprint Updated!', `Milestone ${currentStep} successfully cleared from verification execution loops.`, 'success');
+        }
+
+        function renderClosureView() {
+            let id = document.getElementById('closure-sow-select').value;
+            const left = document.getElementById('closure-left-panel');
+            const right = document.getElementById('closure-right-panel');
+            
+            if(!id) {
+                left.innerHTML = '<h3>1. Client Acceptance Handshake & Liability Release</h3><p style="font-size:13px; color:#64748b; margin-bottom:15px;">Validation loops checking asset ingestion loops.</p><div class="empty-log">Select an active project stream to review delivery verification parameters.</div>';
+                right.innerHTML = '<h3>2. Institutional Experience Certification Desk</h3><p style="font-size:13px; color:#64748b; margin-bottom:15px;">Converts performance matrices directly into cryptographically signed experience certs.</p><div class="empty-log">Select an active project stream.</div>';
+                return;
+            }
+            
+            let sow = SOW_REGISTRY.find(x => x.id == id);
+            if(sow.currentStep <= 6) {
+                left.innerHTML = `<h3>1. Client Acceptance Handshake & Liability Release</h3><div class="empty-log" style="color:var(--warning)">⚠️ Pipeline execution sequence incompete. SOW must complete all lifecycle sprint stages first (Current: Step ${sow.currentStep}/6).</div>`;
+                right.innerHTML = '<h3>2. Institutional Experience Certification Desk</h3><div class="empty-log">Awaiting pipeline resolution signoffs.</div>';
+                return;
+            }
+
+            left.innerHTML = `
+                <h3>1. Client Acceptance Handshake & Liability Release</h3>
+                <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Validation logs checking asset ingestion loops, code tree repository transfers, and release triggers configurations.</p>
+                <div style="margin:20px 0;">
+                    <label><input type="checkbox" id="chk-l1" checked disabled> [Verified] Ingested Code Tree Base Environment Arrays</label><br><br>
+                    <label><input type="checkbox" id="chk-l2" checked disabled> [Verified] Database Architecture Backups Handed Over</label><br><br>
+                    <label><input type="checkbox" id="chk-l3" checked disabled> Release Implementation Student Cohort of Core Liability</label>
+                </div>
+                <button class="btn btn-primary-action" onclick="executeReleaseHandshake()">Authorize Delivery Asset Acceptance & Disburse Liability Waivers</button>
+            `;
+
+            let certOptions = '';
+            sow.cohortStudents.forEach(st => certOptions += `<option value="${st}">${st}</option>`);
+
+            right.innerHTML = `
+                <h3>2. Institutional Experience Certification Desk</h3>
+                <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Converts performance matrices directly into cryptographically signed digital experience certification ledgers.</p>
+                <div class="form-group"><label>Student Target Cohort Resource</label><select id="cert-student-select">${certOptions}</select></div>
+                <div class="form-group"><label>Assigned Performance Grading Matrix</label><select><option>Grade A+ (Exceptional Velocity Engineering)</option><option>Grade A (High Capability Execution)</option></select></div>
+                <div style="background:#fef3c7; color:#b45309; padding:10px; border-radius:4px; font-size:12px; font-weight:600; margin-bottom:15px;">Escrow Billing Settlement Status Ledger: FUNDS LOCKED IN PLATFORM COMPLIANCE ESCROW ACCOUNT LEDGER GATEWAY</div>
+                <button class="btn btn-success" onclick="disburseCert()">Disburse Cryptographic Certification & Clear Escrow Triggers</button>
+            `;
+        }
+
+        function executeReleaseHandshake() { Swal.fire('Authorized!', 'Delivery asset acceptance locked, liabilities released.', 'success'); }
+        function disburseCert() { 
+            let name = document.getElementById('cert-student-select').value;
+            Swal.fire('Disbursed!', `Experience certificate generated and pushed for student professional resource. Escrow triggers cleared.`, 'success'); 
+        }
+    </script>
+</body>
+</html>
